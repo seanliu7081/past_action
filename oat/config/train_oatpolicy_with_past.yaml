@@ -1,23 +1,25 @@
 defaults:
   - _self_
-  - task/policy: libero/libero10
+  - task/policy: libero/libero10_with_past
 
-name: train_oatpolicy
+name: train_oatpolicy_with_past
 _target_: oat.workspace.train_policy.TrainPolicyWorkspace
 
 seed: 42
 horizon: 32
 n_action_steps: 16
 n_obs_steps: 2
+past_n: 7
 task_name: ${task.policy.name}
 shape_meta: ${task.policy.shape_meta}
 
 policy:
-  _target_: oat.policy.oatpolicy.OATPolicy
+  _target_: oat.policy.oat_policy_with_past.OATPolicyWithPast
 
   shape_meta: ${shape_meta}
   n_action_steps: ${n_action_steps}
   n_obs_steps: ${n_obs_steps}
+  past_n: ${past_n}
 
   obs_encoder:
     _target_: oat.perception.fused_obs_encoder.FusedObservationEncoder
@@ -27,10 +29,10 @@ policy:
     vision_encoder:
       _target_: oat.perception.robomimic_vision_encoder.RobomimicRgbEncoder
       crop_shape: [76, 76]
-    
+
     state_encoder:
       _target_: oat.perception.state_encoder.ProjectionStateEncoder
-      out_dim: null   # identity projection
+      out_dim: null
 
   action_tokenizer:
     _target_: oat.tokenizer.oat.tokenizer.OATTok.from_checkpoint
@@ -52,8 +54,7 @@ training:
   num_epochs: 5001
   val_every: 10
   sample_every: 10
-  # rollout_every: 200
-  rollout_every: 50
+  rollout_every: 200
   checkpoint_every: 10
   lr_scheduler: constant
   lr_warmup_steps: 100
@@ -79,10 +80,9 @@ optimizer:
   obs_enc_lr: 1.0e-5
   weight_decay: 0.0
   betas: [0.9, 0.95]
-  
+
 dataloader:
   batch_size: 64
-  # num_workers: 4
   num_workers: 2
   shuffle: True
   pin_memory: True
@@ -91,7 +91,6 @@ dataloader:
 
 val_dataloader:
   batch_size: 64
-  # num_workers: 4
   num_workers: 2
   shuffle: False
   pin_memory: True
@@ -112,7 +111,7 @@ checkpoint:
     monitor_key: mean_success_rate
     mode: max
     k: 3
-    format_str: 'ep-{epoch:04d}_sr-{mean_success_rate:.3f}.ckpt'
+    format_str: "ep-{epoch:04d}_sr-{mean_success_rate:.3f}.ckpt"
   save_last_ckpt: True
   save_last_snapshot: False
 
