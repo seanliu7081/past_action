@@ -2,7 +2,7 @@ defaults:
   - _self_
   - task/policy: libero/libero10_with_past
 
-name: train_oatpolicy_with_enriched_past
+name: train_oatpolicy_with_residual
 _target_: oat.workspace.train_policy.TrainPolicyWorkspace
 
 seed: 42
@@ -14,7 +14,8 @@ task_name: ${task.policy.name}
 shape_meta: ${task.policy.shape_meta}
 
 policy:
-  _target_: oat.policy.oat_policy_with_enriched_past.OATPolicyWithEnrichedPast
+  # _target_: oat.policy.oat_policy_with_enriched_past.OATPolicyWithEnrichedPast
+  _target_: oat.policy.oat_policy_with_residual.OATPolicyWithResidual
 
   shape_meta: ${shape_meta}
   n_action_steps: ${n_action_steps}
@@ -35,7 +36,8 @@ policy:
       out_dim: null
 
   action_tokenizer:
-    _target_: oat.tokenizer.oat.tokenizer.OATTok.from_checkpoint
+    # _target_: oat.tokenizer.oat.tokenizer.OATTok.from_checkpoint
+    _target_: oat.tokenizer.oat.residual_tokenizer.ResidualOATTok.from_checkpoint
     checkpoint: ???
 
   # backbone model params
@@ -55,7 +57,6 @@ training:
   val_every: 10
   sample_every: 10
   rollout_every: 200
-  # rollout_every: 100
   checkpoint_every: 10
   lr_scheduler: constant
   lr_warmup_steps: 100

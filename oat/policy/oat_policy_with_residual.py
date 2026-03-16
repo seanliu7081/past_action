@@ -4,13 +4,14 @@ import torch.nn.functional as F
 from typing import Dict, Optional, Tuple
 
 from oat.policy.base_policy import BasePolicy
-from oat.tokenizer.oat.tokenizer import OATTok
+# from oat.tokenizer.oat.tokenizer import OATTok
+from oat.tokenizer.oat.residual_tokenizer import ResidualOATTok
 from oat.perception.base_obs_encoder import BaseObservationEncoder
 from oat.model.autoregressive.transformer_cache import AutoregressiveModel
 from oat.model.common.normalizer import LinearNormalizer
 
 
-class OATPolicyWithEnrichedPast(BasePolicy):
+class OATPolicyWithResidual(BasePolicy):
     """
     OATPolicy variant that conditions on:
       1. Full 7-step raw past actions (preserves temporal structure)
@@ -32,7 +33,7 @@ class OATPolicyWithEnrichedPast(BasePolicy):
         self,
         shape_meta: Dict,
         obs_encoder: BaseObservationEncoder,
-        action_tokenizer: OATTok,
+        action_tokenizer: ResidualOATTok,
         n_action_steps: int,
         n_obs_steps: int,
         past_n: int = 7,
@@ -320,8 +321,10 @@ class OATPolicyWithEnrichedPast(BasePolicy):
 
         # decode tokens -> continuous actions
         with torch.inference_mode():
+            baseline = self._past_buffer[:, -1, :]      # (B, action_dim) = a_t
             action_pred = self.action_tokenizer.detokenize(
                 tokens=action_tokens,
+                baseline=baseline,
             )
 
         # receding horizon
@@ -349,7 +352,8 @@ class OATPolicyWithEnrichedPast(BasePolicy):
     def forward(self, batch) -> torch.Tensor:
         # tokenize ground-truth actions (frozen tokenizer)
         with torch.no_grad():
-            action_tokens = self.action_tokenizer.tokenize(batch["action"])
+            baseline = batch["past_action"][:, -1, :]   # (B, action_dim) = a_t
+            action_tokens = self.action_tokenizer.tokenize(batch["action"], baseline)
 
         B = batch["action"].shape[0]
         device = batch["action"].device

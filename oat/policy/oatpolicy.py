@@ -198,6 +198,7 @@ class OATPolicy(BasePolicy):
             temperature=temperature,
             top_k=topk,
         )[:, 1:]    # [B, max_seq_len], drop <BOS>
+        action_tokens = action_tokens.clamp(0, self.bos_id - 1)
 
         # decode action tokens
         with torch.inference_mode():

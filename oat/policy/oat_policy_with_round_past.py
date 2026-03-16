@@ -461,6 +461,7 @@ class OATPolicyWithRoundPast(BasePolicy):
             temperature=temperature,
             top_k=topk,
         )[:, 1:]    # drop <BOS>
+        action_tokens = action_tokens.clamp(0, self.bos_id - 1)
 
         # decode tokens -> continuous actions
         with torch.inference_mode():
