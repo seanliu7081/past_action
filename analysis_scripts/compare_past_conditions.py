@@ -189,9 +189,9 @@ def plot_results(metrics, output_dir: pathlib.Path):
 
     comparisons = [
         ("A_vs_gt_clean",    "action_A vs GT (clean)",     "tab:blue"),
-        ("A_vs_gt_rt",       "action_A vs GT (roundtrip)", "tab:cyan"),
+        ("A_vs_gt_rt",       "action_A vs GT (detok)", "tab:cyan"),
         ("B1_vs_gt_clean",   "action_B1 vs GT (clean)",    "tab:orange"),
-        ("B1_vs_gt_rt",      "action_B1 vs GT (roundtrip)","tab:red"),
+        ("B1_vs_gt_rt",      "action_B1 vs GT (detok)","tab:red"),
         ("A_vs_B1",          "action_A vs action_B1",      "tab:green"),
     ]
 
@@ -242,9 +242,9 @@ def print_summary(metrics):
     print("=" * 65)
     labels = {
         "A_vs_gt_clean":  "action_A vs GT (clean)",
-        "A_vs_gt_rt":     "action_A vs GT (roundtrip)",
+        "A_vs_gt_rt":     "action_A vs GT (detok)",
         "B1_vs_gt_clean": "action_B1 vs GT (clean)",
-        "B1_vs_gt_rt":    "action_B1 vs GT (roundtrip)",
+        "B1_vs_gt_rt":    "action_B1 vs GT (detok)",
         "A_vs_B1":        "action_A vs action_B1",
     }
     for key, label in labels.items():
