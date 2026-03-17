@@ -118,7 +118,7 @@ class SpectralBasisEncoder(nn.Module):
         # -- Per-token normalization ------------------------------------------
         # LayerNorm centers and scales each token's latent vector,
         # producing a distribution more amenable to FSQ quantization.
-        self.latent_norm = nn.LayerNorm(latent_dim)
+        # self.latent_norm = nn.LayerNorm(latent_dim)
 
         # -- Store config -----------------------------------------------------
         self.sample_dim = sample_dim
@@ -167,7 +167,7 @@ class SpectralBasisEncoder(nn.Module):
         ], dim=1)  # [B, K, latent_dim]
 
         # Per-token normalization for FSQ-friendly distribution
-        latents = self.latent_norm(latents)
+        # latents = self.latent_norm(latents)
 
         return latents
 
