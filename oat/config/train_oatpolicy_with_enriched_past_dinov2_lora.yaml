@@ -59,8 +59,8 @@ training:
   num_epochs: 5001
   val_every: 10
   sample_every: 10
-  # rollout_every: 200
-  rollout_every: 50
+  rollout_every: 100
+  # rollout_every: 50
   checkpoint_every: 10
   lr_scheduler: constant
   lr_warmup_steps: 100
