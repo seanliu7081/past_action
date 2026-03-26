@@ -70,11 +70,13 @@ class OATPolicyWithEnrichedPast(BasePolicy):
         acc_proj = nn.Sequential(
             nn.Linear(action_dim, obs_feature_dim),
             nn.GELU(),
+            # nn.SiLU(),
             nn.Linear(obs_feature_dim, obs_feature_dim),
         )
         jerk_proj = nn.Sequential(
             nn.Linear(action_dim, obs_feature_dim),
             nn.GELU(),
+            # nn.SiLU(),
             nn.Linear(obs_feature_dim, obs_feature_dim),
         )
 
@@ -82,6 +84,7 @@ class OATPolicyWithEnrichedPast(BasePolicy):
         raw_proj = nn.Sequential(
             nn.Linear(action_dim, obs_feature_dim),
             nn.GELU(),
+            # nn.SiLU(),
             nn.Linear(obs_feature_dim, obs_feature_dim),
         )
 

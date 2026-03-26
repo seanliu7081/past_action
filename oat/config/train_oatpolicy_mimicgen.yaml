@@ -1,25 +1,23 @@
 defaults:
   - _self_
-  - task/policy: libero/libero10_with_past
+  - task/policy: mimicgen/stack_three_d1
 
-name: train_oatpolicy_with_enriched_past_dinov2_lora
+name: train_oatpolicy
 _target_: oat.workspace.train_policy.TrainPolicyWorkspace
 
 seed: 42
 horizon: 32
 n_action_steps: 16
 n_obs_steps: 2
-past_n: 7
 task_name: ${task.policy.name}
 shape_meta: ${task.policy.shape_meta}
 
 policy:
-  _target_: oat.policy.oat_policy_with_enriched_past.OATPolicyWithEnrichedPast
+  _target_: oat.policy.oatpolicy.OATPolicy
 
   shape_meta: ${shape_meta}
   n_action_steps: ${n_action_steps}
   n_obs_steps: ${n_obs_steps}
-  past_n: ${past_n}
 
   obs_encoder:
     _target_: oat.perception.fused_obs_encoder.FusedObservationEncoder
@@ -27,17 +25,12 @@ policy:
     shape_meta: ${shape_meta}
 
     vision_encoder:
-      _target_: oat.perception.dinov2_lora_rgb_encoder.DINOv2LoRARgbEncoder
-      model_name: dinov2_vits14
-      num_kp: 32
-      input_size: 224
-      lora_r: 8
-      lora_alpha: 16
-      lora_dropout: 0.1
+      _target_: oat.perception.robomimic_vision_encoder.RobomimicRgbEncoder
+      crop_shape: [76, 76]
 
     state_encoder:
       _target_: oat.perception.state_encoder.ProjectionStateEncoder
-      out_dim: null
+      out_dim: null   # identity projection
 
   action_tokenizer:
     _target_: oat.tokenizer.oat.tokenizer.OATTok.from_checkpoint
@@ -59,8 +52,7 @@ training:
   num_epochs: 5001
   val_every: 10
   sample_every: 10
-  rollout_every: 200
-  # rollout_every: 50
+  rollout_every: 50
   checkpoint_every: 10
   lr_scheduler: constant
   lr_warmup_steps: 100
@@ -70,7 +62,7 @@ training:
   max_reconst_steps: null
   seed: ${seed}
   use_ema: True
-  num_demo: 500
+  num_demo: 100
   tqdm_interval_sec: 1.0
 
 ema:
@@ -117,7 +109,7 @@ checkpoint:
     monitor_key: mean_success_rate
     mode: max
     k: 3
-    format_str: "ep-{epoch:04d}_sr-{mean_success_rate:.3f}.ckpt"
+    format_str: 'ep-{epoch:04d}_sr-{mean_success_rate:.3f}.ckpt'
   save_last_ckpt: True
   save_last_snapshot: False
 
