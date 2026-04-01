@@ -38,8 +38,10 @@ policy:
 
   # backbone model params
   embed_dim: 256
-  n_layers: 4
-  n_heads: 4
+  # n_layers: 4
+  # n_heads: 4
+  n_layers: 8
+  n_heads: 8
   dropout: 0.1
   # policy inference params
   temperature: 1.0
@@ -53,7 +55,7 @@ training:
   val_every: 10
   sample_every: 10
   # rollout_every: 200
-  rollout_every: 50
+  rollout_every: 100
   checkpoint_every: 10
   lr_scheduler: constant
   lr_warmup_steps: 100
