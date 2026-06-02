@@ -1,8 +1,15 @@
+# train_oattok_vq.yaml
+# ─────────────────────────────────────────────────────
+# OATTok with vanilla VQ-VAE quantizer (EMA codebook).
+# Matches FSQ capacity exactly: K=5000, D=5.
+# Drop-in ablation against train_oattok.yaml.
+# ─────────────────────────────────────────────────────
+
 defaults:
   - _self_
   - task/tokenizer: libero/libero10
 
-name: train_oattok
+name: train_oattok_vq
 _target_: oat.workspace.train_oattok.TrainOATTokWorkspace
 
 seed: 42
@@ -10,9 +17,11 @@ horizon: 16
 task_name: ${task.tokenizer.name}
 action_dim: ${task.tokenizer.shape_meta.action.shape[0]}
 
-latent_dim: ${eval:'len(${tokenizer.quantizer.levels})'}
-tokenizer: 
-  _target_: oat.tokenizer.oat.tokenizer.OATTok
+# Match FSQ exactly: latent_dim 5, codebook 8*5*5*5*5 = 5000.
+latent_dim: 5
+
+tokenizer:
+  _target_: oat.tokenizer.oat.tokenizer_vq.OATTokVQ
 
   encoder:
     _target_: oat.tokenizer.oat.encoder.register_encoder.RegisterEncoder
@@ -24,7 +33,7 @@ tokenizer:
     pdropout: 0.1
     latent_dim: ${latent_dim}
     num_registers: 8
-    
+
   decoder:
     _target_: oat.tokenizer.oat.decoder.single_pass_decoder.SinglePassDecoder
     sample_dim: ${action_dim}
@@ -38,10 +47,17 @@ tokenizer:
     latent_horizon: ${tokenizer.encoder.num_registers}
     use_causal_decoder: true
 
+  # ── KEY CHANGE: vanilla VQ instead of FSQ ────────────
   quantizer:
-    _target_: oat.tokenizer.oat.quantizer.fsq.FSQ
-    levels: [8, 5, 5, 5]
-    
+    _target_: oat.tokenizer.oat.quantizer.vq.VQ
+    codebook_size: 5000
+    dim: ${latent_dim}
+    commitment_beta: 0.25
+    ema_decay: 0.99
+    ema_eps: 1.0e-5
+    dead_code_threshold: 1.0
+    use_ema: true
+
 
 training:
   resume: True
@@ -74,7 +90,7 @@ optimizer:
   learning_rate: 5.0e-5
   weight_decay: 0.0
   betas: [0.9, 0.95]
-  
+
 dataloader:
   batch_size: 256
   num_workers: 4
@@ -96,7 +112,7 @@ logging:
   resume: True
   mode: online
   name: ${now:%Y%m%d.%H%M%S}_${name}_${task_name}_N${training.num_demo}
-  tags: ["${name}", "${task_name}"]
+  tags: ["${name}", "${task_name}", "vq"]
   id: null
   group: null
 

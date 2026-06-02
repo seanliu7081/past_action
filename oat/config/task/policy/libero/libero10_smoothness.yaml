@@ -1,0 +1,16 @@
+# Drop-in policy task config that swaps the LIBERO env runner for the
+# smoothness-instrumented variant. Inherits everything else from libero10.yaml
+# (n_test, fps, image_size, dataset spec, etc.) via Hydra's defaults list.
+#
+# Use it from the CLI when running scripts/eval_policy_sim.py, e.g.:
+#   python scripts/eval_policy_sim.py task/policy=libero/libero10_smoothness ...
+
+defaults:
+  - libero10
+  - _self_
+
+env_runner:
+  _target_: oat.env_runner.libero_runner_smoothness.LiberoRunnerSmoothness
+  smoothness_rot_mode: euclidean
+  smoothness_pos_slice: [0, 3]
+  smoothness_rot_slice: [3, 6]

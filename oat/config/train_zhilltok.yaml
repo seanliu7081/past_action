@@ -41,6 +41,7 @@ tokenizer:
 
   quantizer:
     _target_: oat.tokenizer.zhill.quantizer.product_hilbert_fsq.ProductHilbertFSQ
+    # levels: [8, 5, 5, 5, 5]
     levels: [8, 5, 5, 5]
 
 

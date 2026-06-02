@@ -2,7 +2,7 @@ defaults:
   - _self_
   - task/tokenizer: libero/libero10
 
-name: train_oattok
+name: train_oattok_so3aug
 _target_: oat.workspace.train_oattok.TrainOATTokWorkspace
 
 seed: 42
@@ -11,8 +11,21 @@ task_name: ${task.tokenizer.name}
 action_dim: ${task.tokenizer.shape_meta.action.shape[0]}
 
 latent_dim: ${eval:'len(${tokenizer.quantizer.levels})'}
-tokenizer: 
-  _target_: oat.tokenizer.oat.tokenizer.OATTok
+tokenizer:
+  _target_: oat.tokenizer.oat.tokenizer_so3_aug.OATTokSO3Aug
+
+  action_aug:
+    _target_: oat.tokenizer.oat.augment.so3_action_chunk_aug.SO3ActionChunkAug
+    p: 1
+    # max_angle_deg: 10.0
+    max_angle_deg: 30.0
+    # max_angle_deg: 60.0
+    mode: left_noise
+    augment_position: false
+    pos_start: 0
+    pos_end: 3
+    rot_start: 3
+    rot_end: 6
 
   encoder:
     _target_: oat.tokenizer.oat.encoder.register_encoder.RegisterEncoder
@@ -24,7 +37,7 @@ tokenizer:
     pdropout: 0.1
     latent_dim: ${latent_dim}
     num_registers: 8
-    
+
   decoder:
     _target_: oat.tokenizer.oat.decoder.single_pass_decoder.SinglePassDecoder
     sample_dim: ${action_dim}
@@ -40,8 +53,9 @@ tokenizer:
 
   quantizer:
     _target_: oat.tokenizer.oat.quantizer.fsq.FSQ
-    levels: [8, 5, 5, 5]
-    
+    levels: [8, 5, 5, 5, 5]
+    # levels: [8, 5, 5, 5]
+
 
 training:
   resume: True
@@ -74,7 +88,7 @@ optimizer:
   learning_rate: 5.0e-5
   weight_decay: 0.0
   betas: [0.9, 0.95]
-  
+
 dataloader:
   batch_size: 256
   num_workers: 4
