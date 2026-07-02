@@ -16,7 +16,7 @@ tokenizer:
 
   action_aug:
     _target_: oat.tokenizer.oat.augment.so3_action_chunk_aug.SO3ActionChunkAug
-    p: 1
+    p: 0.6
     # max_angle_deg: 10.0
     max_angle_deg: 30.0
     # max_angle_deg: 60.0
