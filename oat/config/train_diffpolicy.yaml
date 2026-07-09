@@ -6,8 +6,10 @@ name: train_diffpolicy
 _target_: oat.workspace.train_policy.TrainPolicyWorkspace
 
 seed: 42
-horizon: 32
-n_action_steps: 16
+# horizon: 32
+horizon: 16
+# n_action_steps: 16
+n_action_steps: 8
 n_obs_steps: 2
 task_name: ${task.policy.name}
 shape_meta: ${task.policy.shape_meta}
