@@ -1,0 +1,97 @@
+# Working conda spec for this machine (Ubuntu 24.04, RTX 4090 cc8.9, driver 570.169 / CUDA 12.8).
+# The repo's environment.yml cannot be solved as written; this file is the corrected version.
+#
+# Why environment.yml fails (all verified against the anaconda.org API):
+#   1. `pytorch=2.10.0` / `torchvision=0.25.0` are NOT on the `pytorch` channel — conda builds
+#      were discontinued after 2.5.1, so that channel can never satisfy the pin.
+#   2. `pytorch-cuda=12.8` does not exist anywhere; that metapackage tops out at 12.4.
+#   3. `defaults` is not configured in Miniforge (and needs an Anaconda commercial licence),
+#      so the two packages that only live there fail: `glfw3` (conda-forge calls it `glfw`)
+#      and `scipy=1.15.3` (conda-forge went 1.15.2 -> 1.16.0; 1.15.3 is PyPI-only).
+#   The pins in environment.yml are PyPI versions transplanted into a conda spec.
+#
+# Build-string pinning is load-bearing: conda-forge ships both cuda129 and cuda130 builds of
+# pytorch 2.10.0. A cuda130 build needs CUDA forward-compatibility, which is datacenter-GPU only
+# and would break on these GeForce cards. cuda129 on a 12.8 driver is fine via CUDA minor-version
+# compatibility, and sm_89 cubins ship natively so there is no PTX-JIT fallback. Verified:
+# torch.cuda.is_available() is True and a GPU matmul + full train step both run.
+#
+# Usage (the editable installs are deliberately NOT in the pip: block — conda resolves relative
+# paths against THIS FILE's directory and aborts the entire pip stage if one fails):
+#
+#   conda env create -f environment.cuda129.yml     # lands in /venv/oat on this box
+#   conda activate oat
+#   pip install -e third_party/LIBERO               # LIBERO first: oat depends on it
+#   pip install -e .
+#
+# Note: `pip install -e .` upgrades wandb 0.18.7 -> 0.28.x, because pyproject.toml requires
+# wandb>=0.24.0 while the pin below says ==0.18.7. That contradiction is in the repo, not here;
+# setup_env.sh hits it identically. The pyproject constraint wins.
+
+name: oat
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip
+  - numpy=2.2.6
+  - h5py=3.15.1
+  - matplotlib=3.10.8
+  - pandas=2.3.3
+  - pyyaml
+  - cmake
+  - patchelf
+  - glew
+  - mesalib
+  - glfw
+  - cuda-version=12.9
+  - pytorch=2.10.0=cuda129*
+  - torchvision=0.25.0=cuda129*
+  - pip:
+      - scipy==1.15.3
+      - absl-py==2.4.0
+      - accelerate==1.12.0
+      - av==16.1.0
+      - bddl==3.6.0
+      - beautifulsoup4==4.14.3
+      - cloudpickle==3.1.2
+      - diffusers==0.37.0
+      - dill==0.4.1
+      - easydict==1.13
+      - einops==0.8.2
+      - einx==0.3.0
+      - gdown==5.2.1
+      - glfw==2.10.0
+      - gymnasium==1.2.3
+      - gym==0.26.2
+      - huggingface_hub==1.5.0
+      - hydra-core==1.3.2
+      - imageio==2.37.2
+      - imageio-ffmpeg==0.6.0
+      - joblib==1.5.3
+      - mujoco==3.2.6
+      - nltk==3.9.3
+      - numba==0.64.0
+      - numcodecs==0.13.1
+      - omegaconf==2.3.0
+      - opencv-python==4.13.0.92
+      - peft==0.18.1
+      - protobuf==5.29.6
+      - PyOpenGL==3.1.10
+      - pybind11==3.0.1
+      - robomimic==0.2.0
+      - robosuite==1.4.0
+      - safetensors==0.7.0
+      - tensorboard==2.20.0
+      - tensorboardX==2.6.4
+      - tokenizers==0.22.2
+      - transformers==5.2.0
+      - tqdm==4.67.3
+      - vector-quantize-pytorch==1.27.21
+      - wandb==0.18.7
+      - zarr==2.18.3
+      - pydantic==2.12.5
+      - pytest==9.0.2
+      - pre_commit==4.5.1
+      - jupytext==1.19.1
+      - lxml==6.0.2
